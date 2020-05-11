@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
+global.test = true;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -38,4 +39,19 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+
+const internal = require('./app/internal');
+internal.Initialize();
+if(global.test === true) {
+  global.identity = {
+    name: 'alin',
+    email: 'alin@test.com',
+    folderPath: 'C:\\Users\\Alin\\distcollab',
+    projectPath: 'C:\\Users\\Alin\\distcollab\\project'
+  };
+}
+else {
+  let framework = require('./app/framework');
+  framework.GetIdentity();
+}
 module.exports = app;
