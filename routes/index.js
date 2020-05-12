@@ -11,11 +11,13 @@ router.get('/', async function(req, res, next) {
     return res.redirect('/set-repo');
 
   }
-  // internal.SetGitBugIdentity();
-  internal.StartGitBug();
+  setTimeout(function () {
+    internal.StartGitBug();
 
-  internal.AddBug('testfromcode','messagefromcode');
 
+
+  // internal.AddBug('testfromcode','messagefromcode');
+  },5000);
 
   res.render('home' );
 });

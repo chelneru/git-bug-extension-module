@@ -1,22 +1,25 @@
 const axios = require('axios');
-
+const internal = require('./internal');
 
 exports.GetIdentity = () => {
-
+    console.log('Getting gitbug identity....');
     axios.post('http://localhost:3000/extension/identity', {
         name: 'gitbug',
     })
         .then((res) => {
             // console.log(`statusCode: ${res.statusCode}`)
             if(res.data.status === true) {
+                console.log(JSON.stringify(res.data));
                 global.identity = {
-                    name: res.data.identitty.name,
+                    name: res.data.identity.name,
                     email: res.data.identity.email,
                     folderPath: res.data.identity.folderPath,
                     projectPath: res.data.identity.projectPath
                 };
                 global.moduleConfig = res.data.config;
-                console.log('Retrieved identity successfully!');
+                console.log('Retrieved identity for gitbug successfully!');
+                internal.SetGitBugIdentity(global.identity.name,global.identity.email);
+
             }
             else {
                 console.log('Failed to get valid identity information.');

@@ -5,7 +5,7 @@ exports.StartGitBug = () => {
     };
     console.log(defaults.cwd);
     const spawn = require('child_process').spawn;
-    const ls = spawn('git-bug', ['webui', '--port',3010],defaults);
+    const ls = spawn('git-bug', ['webui', '--port',3010,'--no-open'],defaults);
 
     ls.stdout.on('data', (data) => {
         console.log(`stdout: ${data}`);
@@ -38,11 +38,11 @@ exports.AddBug = (title,message) => {
             console.error(error)
         });
 }
-exports.SetGitBugIdentity = () => {
+exports.SetGitBugIdentity = (name,email) => {
 
 
     const spawn = require('child_process').spawn;
-    const user_create = spawn('git-bug', ['user', 'create',3010]);
+    const user_create = spawn('git-bug', ['user', 'create']);
 
     user_create.stdout.on('data', (data) => {
         console.log(`stdout: ${data}`);
@@ -58,17 +58,22 @@ exports.SetGitBugIdentity = () => {
 
     setTimeout(function() {
         console.log('setting name');
-        user_create.stdin.write(global.identity.name);
-        console.log('setting email');
-        setTimeout(function() {
-        user_create.stdin.write(global.identity.email);
-        }, 500);
-        setTimeout(function() {
+        user_create.stdin.write(name);
+        user_create.stdin.write("\n");
+        setTimeout(function () {
+            user_create.stdin.write(email);
             user_create.stdin.write('\n');
-        }, 700);
-        setTimeout(function() {
-            user_create.stdin.end();
-        }, 2000);
+
+        },100)
+        setTimeout(function () {
+            user_create.stdin.write("");
+            user_create.stdin.write('\n');
+
+        },200)
+        user_create.stdin.write('\n\n');
+
+
+
     }, 1000);
 
 
