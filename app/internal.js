@@ -1,3 +1,5 @@
+const framework = require('./framework');
+
 exports.StartGitBug = () => {
     const defaults = {
         cwd: process.cwd(),
@@ -19,6 +21,111 @@ exports.StartGitBug = () => {
         console.log(`child process exited with code ${code}`);
     });
 
+}
+
+exports.LoadConfig = () => {
+    global.sharedData = {};
+    const appRoot = require('app-root-path').toString();
+    if (fs.existsSync(path.join(appRoot, 'settings.json'))) {
+        let rawdata = fs.readFileSync(path.join(appRoot,'settings.json'));
+        global.moduleConfig = JSON.parse(rawdata.toString());
+    } else {
+        global.moduleConfig = {};
+        exports.SaveConfig();
+    }
+}
+exports.SaveConfig = async () => {
+    const appRoot = require('app-root-path').toString();
+    return fs.writeFile(path.join(appRoot, 'settings.json'), JSON.stringify(global.moduleConfig), (err) => {
+        if (err) {
+            console.log('Error saving config file:', err.toString());
+        }
+    });
+}
+exports.CreateRepository = async (path) => {
+    const simpleGit = require('simple-git/promise')(path);
+    return simpleGit.checkIsRepo().then(function (res) {
+        if (res === false) {
+            try {
+                simpleGit.init().then(function () {
+                    return {status: true};
+                });
+
+            } catch (e) {
+                return {status: false, message: e.toString()};
+            }
+        }
+
+    })
+}
+
+exports.PushRepository = async () => {
+    try {
+        global.git = require('simple-git/promise')(global.moduleConfig.repoPath);
+        await global.git.getRemotes().then(function (result) {
+            if (result.findIndex(i => i.name === 'distcollab') < 0) {
+                return global.git.addRemote('distcollab', global.moduleConfig.bareRepoPath).then(function () {
+                    return execCommand(['git bug','push','distcollab']);
+                });
+            }
+            else {
+                return execCommand(['git bug','push','distcollab']);
+
+            }
+        });
+
+        framework.PublishData(global.moduleConfig.bareRepoPath,'git-bare-repo');
+    } catch (e) {
+        console.log('error pushing:', e.toString());
+
+        return {status: false, message: e.toString()};
+
+    }
+    return {status: true};
+}
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
+async function execCommand(command) {
+    const { stdout, stderr } = await exec(command);
+    console.log('stdout:', stdout);
+    console.log('stderr:', stderr);
+}
+exports.PullRepository = async () => {
+    try {
+        global.git = require('simple-git/promise')(global.moduleConfig.repoPath);
+
+        framework.SyncronizeData(global.moduleConfig.bareRepoPath);
+        await global.git.getRemotes().then(function (result) {
+            if (result.findIndex(i => i.name === 'distcollab') < 0) {
+                return global.git.addRemote('distcollab', global.moduleConfig.bareRepoPath).then(function () {
+                    return execCommand(['git bug','pull','distcollab']);
+                });
+            }
+            else {
+                return execCommand(['git bug','pull','distcollab']);
+
+            }
+        });
+        return {status: true};
+
+    } catch (e) {
+        console.log('error pulling:', e.toString());
+
+        return {status: false, message: e.toString()};
+
+    }
+}
+exports.CreateBareRepo = async (bareRepoPath) => {
+    global.git = require('simple-git/promise')();
+    try {
+        if (!fs.existsSync(bareRepoPath)) {
+            global.git.clone(global.moduleConfig.repoPath, bareRepoPath, ['--bare']);
+        }
+
+    } catch (e) {
+        console.log('Error cloning the repository for bare repo:', e.toString());
+    }
 }
 exports.AddBug = (title,message) => {
     const axios = require('axios');

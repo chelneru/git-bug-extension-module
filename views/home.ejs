@@ -1,11 +1,11 @@
 <%- include('header'); -%>
-
-<button class="btn btn-info add-comment"  data-toggle="modal" data-target="#AddCommentModal">Add comment</button>
+<head></head>
+<body style="height: 50px;text-align: right;">
 <button class="btn btn-info add-bug" data-toggle="modal" data-target="#AddBugModal">Add bug</button>
 
 
-
-<div class="modal fade" id="AddCommentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="AddBugModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -18,12 +18,12 @@
 
                 <div class="existing-bugs"></div>
 
-                <form method="post" action="/add-comment">
+                <form method="post" action="/add-bug">
                     <div class="form-group">
-                        <label for="bootsrapNodes">Comment</label>
-                        <textarea class="form-control" name="comment" id="bootsrapNodes" rows="4"></textarea>
+                        <label for="bootsrapNodes">Bug description</label>
+                        <textarea class="form-control" name="comment" id="" rows="4"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-info add-comment-btn">submit</button>
+                    <button type="submit" class="btn btn-info add-bug-btn">submit</button>
 
                 </form>
             </div>
@@ -31,3 +31,11 @@
         </div>
     </div>
 </div>
+</body>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        console.log('sending signal to start git-bug-iframe')
+        window.top.postMessage('start-git-bug-iframe', '*');
+
+    });
+</script>

@@ -6,6 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "app-root-path": "^3.0.0",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "ejs": "~2.6.1",
@@ -15,6 +16,7 @@
   },
   "devDependencies": {
     "axios": "^0.19.2",
-    "graphql": "^15.0.0"
+    "graphql": "^15.0.0",
+    "simple-git": "^2.4.0"
   }
 }

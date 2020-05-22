@@ -2,32 +2,50 @@ const axios = require('axios');
 const internal = require('./internal');
 
 exports.GetIdentity = () => {
-    console.log('Getting gitbug identity....');
+    axios.interceptors.response.use(
+        function (response) {
+            global.connected = true;
+            return response;
+        },
+        function (err) {
+            if (err.code === "ECONNREFUSED") {
+                //we cannot reach the framework.
+                console.log('Cannot reach framework.')
+            }
+
+            return Promise.reject(err);
+        }
+    );
     axios.post('http://localhost:3000/extension/identity', {
         name: 'gitbug',
     })
-        .then((res) => {
-            // console.log(`statusCode: ${res.statusCode}`)
-            if(res.data.status === true) {
-                console.log(JSON.stringify(res.data));
-                global.identity = {
+        .then(async (res) => {
+            if (res.data.status === true) {
+                let new_identity = {
                     name: res.data.identity.name,
                     email: res.data.identity.email,
-                    folderPath: res.data.identity.folderPath,
+                    is_author: res.data.identity.is_author,
                     projectPath: res.data.identity.projectPath
                 };
-                global.moduleConfig = res.data.config;
-                console.log('Retrieved identity for gitbug successfully!');
-                internal.SetGitBugIdentity(global.identity.name,global.identity.email);
 
-            }
-            else {
+                global.moduleConfig.identity = {...global.moduleConfig.identity, ...new_identity}; //update new identity
+                global.moduleConfig.bareRepoPath = path.join(global.moduleConfig.identity.projectPath, 'git-extension', 'bare-repo');
+                internal.SaveConfig();
+                console.log('Retrieved identity for git-bug successfully!');
+
+                console.log('done initializing');
+            } else {
                 console.log('Failed to get valid identity information.');
 
             }
         })
         .catch((error) => {
-            console.error(error)
+            console.error('Error getting identity information:', error.toString());
+            if (global.connected === false) {
+                setTimeout(function () {
+                    exports.GetIdentity();
+                }, 3000);
+            }
         })
 
 };
@@ -65,11 +83,12 @@ exports.PublishSharedData =(sharedData) => {
             console.error(error)
         })
 }
-exports.PublishData = (bareRepoLocalPath) => {
+exports.PublishData = (bareRepoLocalPath,folderName) => {
     // publishing data for this extension modules means we will publish hash for the bare repo
     axios.post('http://localhost:3000/extension/publish-data', {
             name:'gitbug',
-            path: bareRepoLocalPath
+            path: bareRepoLocalPath,
+            folder: folderName,
         }
     )
         .then((res) => {
@@ -82,12 +101,12 @@ exports.PublishData = (bareRepoLocalPath) => {
         })
 }
 
-exports.SyncronizeData = (bareRepoLocalPath) => {
+exports.SyncronizeData = (folderName, targetPath) => {
     // syncronizing data for this extension modules means we will update the local repo
     axios.post('http://localhost:3000/extension/update-data', {
-            name:'gitbug',
-
-            path: bareRepoLocalPath
+            name: 'git',
+            path: targetPath,
+            folder: folderName
         }
     )
         .then((res) => {
@@ -99,4 +118,5 @@ exports.SyncronizeData = (bareRepoLocalPath) => {
             console.error(error)
         })
 }
+
 
