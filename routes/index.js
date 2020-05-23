@@ -3,54 +3,60 @@ var router = express.Router();
 const internal = require('../app/internal');
 const framework = require('../app/framework');
 /* GET home page. */
-router.get('/', async function(req, res, next) {
+router.get('/', async function (req, res, next) {
 
-  if(global.connected === false) {
-    return res.redirect('/loading');
-  }
-  if(global.moduleConfig.repoPath !== undefined) {
-    //show the normal interface with buttons
-  }
-  else {
-    //show interface to input repoPath
-    return res.redirect('/set-repo');
+    if (global.connected === false) {
+        return res.redirect('/loading');
+    }
+    if (global.moduleConfig.repoPath !== undefined) {
+        //show the normal interface with buttons
+    } else {
+        //show interface to input repoPath
+        return res.redirect('/set-repo');
 
-  }
-  setTimeout(function () {
-    internal.StartGitBug();
-
-
-
-  // internal.AddBug('testfromcode','messagefromcode');
-  },5000);
-
-  res.render('home' );
+    }
+    if (global.started_gitbug === false) {
+        setTimeout(function () {
+            internal.StartGitBug();
+        }, 5000);
+    }
+    res.render('home');
 });
 
 router.post('/status', async function (req, res, next) {
-  return res.json({status:global.connected});
+    return res.json({status: global.connected});
 });
 
-router.get('/set-repo', function(req, res, next) {
+router.get('/set-repo', function (req, res, next) {
 
-  res.render('set-repo');
+    res.render('set-repo');
 });
 router.get('/loading', async function (req, res, next) {
-  return res.render('loading');
+    return res.render('loading');
+});
+
+router.post('/add-bug', async function (req, res, next) {
+    let title = req.body.title;
+    let description = req.body.description;
+    internal.AddBug(title, description);
+    return res.render('loading');
 });
 router.post('/set-repo', async function (req, res, next) {
-  global.moduleConfig.repoPath = req.body.repo;
-  if (global.moduleConfig.identity.is_author === false) {
-    //retrieve data
-    await framework.SyncronizeData('git-bare-repo', global.moduleConfig.repoPath);
-    await internal.CreateRepository(global.moduleConfig.repoPath);
-  } else {
-    await internal.CreateRepository(global.moduleConfig.repoPath);
-  }
-  internal.CreateBareRepo(global.moduleConfig.bareRepoPath);
-  internal.StartGitBug();
+    global.moduleConfig.repoPath = req.body.repo;
+    if (global.moduleConfig.identity.is_author === false) {
+        //retrieve data
+        await framework.SyncronizeData('git-bare-repo', global.moduleConfig.repoPath);
+        await internal.CreateRepository(global.moduleConfig.repoPath);
+    } else {
+        await internal.CreateRepository(global.moduleConfig.repoPath);
+    }
+    internal.CreateBareRepo(global.moduleConfig.bareRepoPath);
+    internal.SaveConfig();
+    if (global.started_gitbug === false) {
 
-  return res.redirect('/');
+        internal.StartGitBug();
+    }
+    return res.redirect('/');
 });
 
 module.exports = router;

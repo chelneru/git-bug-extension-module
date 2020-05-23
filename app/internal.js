@@ -1,6 +1,9 @@
 const framework = require('./framework');
-
+const fs = require('fs');
+const path = require('path');
 exports.StartGitBug = () => {
+    global.started_gitbug= true;
+
     const defaults = {
         cwd: process.cwd(),
         env: process.env
@@ -20,7 +23,6 @@ exports.StartGitBug = () => {
     ls.on('close', (code) => {
         console.log(`child process exited with code ${code}`);
     });
-
 }
 
 exports.LoadConfig = () => {
@@ -29,6 +31,7 @@ exports.LoadConfig = () => {
     if (fs.existsSync(path.join(appRoot, 'settings.json'))) {
         let rawdata = fs.readFileSync(path.join(appRoot,'settings.json'));
         global.moduleConfig = JSON.parse(rawdata.toString());
+        console.log("Repopath after loading config :",global.moduleConfig.repoPath);
     } else {
         global.moduleConfig = {};
         exports.SaveConfig();

@@ -10,12 +10,15 @@ var usersRouter = require('./routes/users');
 var app = express();
 global.test = false;
 global.connected = false;
+global.started_gitbug = false;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-app.use(logger('dev'));
+app.use(logger('dev', {
+  skip: function (req, res) { return res.statusCode < 400 }
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -43,6 +46,9 @@ app.use(function(err, req, res, next) {
 
 const internal = require('./app/internal');
 internal.Initialize();
+
+internal.LoadConfig();
+
 if(global.test === true) {
   global.identity = {
     name: 'alin',

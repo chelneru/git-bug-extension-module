@@ -1,6 +1,6 @@
 const axios = require('axios');
 const internal = require('./internal');
-
+const path = require('path');
 exports.GetIdentity = () => {
     axios.interceptors.response.use(
         function (response) {
@@ -30,10 +30,9 @@ exports.GetIdentity = () => {
 
                 global.moduleConfig.identity = {...global.moduleConfig.identity, ...new_identity}; //update new identity
                 global.moduleConfig.bareRepoPath = path.join(global.moduleConfig.identity.projectPath, 'git-extension', 'bare-repo');
-                internal.SaveConfig();
                 console.log('Retrieved identity for git-bug successfully!');
 
-                console.log('done initializing');
+                console.log('done initializing gitbug extension');
             } else {
                 console.log('Failed to get valid identity information.');
 
