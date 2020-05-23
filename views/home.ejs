@@ -37,7 +37,6 @@
 </body>
 <script>
     window.addEventListener('DOMContentLoaded', (event) => {
-        console.log('sending signal to start git-bug-iframe')
         window.top.postMessage('start-git-bug-iframe', '*');
 
     });
