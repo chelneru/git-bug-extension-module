@@ -2,7 +2,7 @@ const framework = require('./framework');
 const fs = require('fs');
 const path = require('path');
 exports.StartGitBug = () => {
-    global.started_gitbug= true;
+    global.started_gitbug = true;
 
     const defaults = {
         cwd: process.cwd(),
@@ -10,7 +10,7 @@ exports.StartGitBug = () => {
     };
     console.log(defaults.cwd);
     const spawn = require('child_process').spawn;
-    const ls = spawn('git-bug', ['webui', '--port',3010,'--no-open'],defaults);
+    const ls = spawn('git-bug', ['webui', '--port', 3010, '--no-open'], defaults);
 
     ls.stdout.on('data', (data) => {
         console.log(`stdout: ${data}`);
@@ -29,9 +29,13 @@ exports.LoadConfig = () => {
     global.sharedData = {};
     const appRoot = require('app-root-path').toString();
     if (fs.existsSync(path.join(appRoot, 'settings.json'))) {
-        let rawdata = fs.readFileSync(path.join(appRoot,'settings.json'));
-        global.moduleConfig = JSON.parse(rawdata.toString());
-        console.log("Repopath after loading config :",global.moduleConfig.repoPath);
+
+        try {
+            let rawdata = fs.readFileSync(path.join(appRoot, 'settings.json'));
+            global.moduleConfig = JSON.parse(rawdata.toString());
+        } catch (e) {
+            console.log('Error loading config from settings file. The file does not have valid JSON:', e.toString());
+        }
     } else {
         global.moduleConfig = {};
         exports.SaveConfig();
@@ -68,16 +72,15 @@ exports.PushRepository = async () => {
         await global.git.getRemotes().then(function (result) {
             if (result.findIndex(i => i.name === 'distcollab') < 0) {
                 return global.git.addRemote('distcollab', global.moduleConfig.bareRepoPath).then(function () {
-                    return execCommand(['git bug','push','distcollab']);
+                    return execCommand(['git bug', 'push', 'distcollab']);
                 });
-            }
-            else {
-                return execCommand(['git bug','push','distcollab']);
+            } else {
+                return execCommand(['git bug', 'push', 'distcollab']);
 
             }
         });
 
-        framework.PublishData(global.moduleConfig.bareRepoPath,'git-bare-repo');
+        framework.PublishData(global.moduleConfig.bareRepoPath, 'git-bare-repo');
     } catch (e) {
         console.log('error pushing:', e.toString());
 
@@ -90,10 +93,11 @@ const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 
 async function execCommand(command) {
-    const { stdout, stderr } = await exec(command);
+    const {stdout, stderr} = await exec(command);
     console.log('stdout:', stdout);
     console.log('stderr:', stderr);
 }
+
 exports.PullRepository = async () => {
     try {
         global.git = require('simple-git/promise')(global.moduleConfig.repoPath);
@@ -102,11 +106,10 @@ exports.PullRepository = async () => {
         await global.git.getRemotes().then(function (result) {
             if (result.findIndex(i => i.name === 'distcollab') < 0) {
                 return global.git.addRemote('distcollab', global.moduleConfig.bareRepoPath).then(function () {
-                    return execCommand(['git bug','pull','distcollab']);
+                    return execCommand(['git bug', 'pull', 'distcollab']);
                 });
-            }
-            else {
-                return execCommand(['git bug','pull','distcollab']);
+            } else {
+                return execCommand(['git bug', 'pull', 'distcollab']);
 
             }
         });
@@ -130,25 +133,27 @@ exports.CreateBareRepo = async (bareRepoPath) => {
         console.log('Error cloning the repository for bare repo:', e.toString());
     }
 }
-exports.AddBug = (title,message) => {
+exports.AddBug = (title, message) => {
     const axios = require('axios');
 
     let query = `mutation{
-  newBug(input: { title: "`+title+`" message: "`+message+`" }) {
+  newBug(input: { title: "` + title + `" message: "` + message + `" }) {
     bug {
       title status
     }
   }
 }`;
 
-    axios.post('http://127.0.0.1:3010/graphql', {query:query})
-        .then((res) => {console.log(res.data)}
+    axios.post('http://127.0.0.1:3010/graphql', {query: query})
+        .then((res) => {
+                console.log(res.data)
+            }
         )
         .catch((error) => {
             console.error(error)
         });
 }
-exports.SetGitBugIdentity = (name,email) => {
+exports.SetGitBugIdentity = (name, email) => {
 
 
     const spawn = require('child_process').spawn;
@@ -166,7 +171,7 @@ exports.SetGitBugIdentity = (name,email) => {
         console.log(`child process exited with code ${code}`);
     });
 
-    setTimeout(function() {
+    setTimeout(function () {
         console.log('setting name');
         user_create.stdin.write(name);
         user_create.stdin.write("\n");
@@ -174,14 +179,13 @@ exports.SetGitBugIdentity = (name,email) => {
             user_create.stdin.write(email);
             user_create.stdin.write('\n');
 
-        },100)
+        }, 100)
         setTimeout(function () {
             user_create.stdin.write("");
             user_create.stdin.write('\n');
 
-        },200)
+        }, 200)
         user_create.stdin.write('\n\n');
-
 
 
     }, 1000);
