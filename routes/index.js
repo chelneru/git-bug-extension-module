@@ -20,6 +20,8 @@ router.get('/', async function (req, res, next) {
             internal.StartGitBug();
         }, 5000);
     }
+    internal.CreateBareRepo(global.moduleConfig.bareRepoPath);
+
     res.render('home');
 });
 
