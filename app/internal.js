@@ -70,12 +70,12 @@ exports.PushRepository = async () => {
     try {
         global.git = require('simple-git/promise')(global.moduleConfig.repoPath);
         await global.git.getRemotes().then(function (result) {
-            if (result.findIndex(i => i.name === 'distcollab') < 0) {
-                return global.git.addRemote('distcollab', global.moduleConfig.bareRepoPath).then(function () {
-                    return execCommand(['git bug', 'push', 'distcollab']);
+            if (result.findIndex(i => i.name === 'colligo') < 0) {
+                return global.git.addRemote('colligo', global.moduleConfig.bareRepoPath).then(function () {
+                    return execCommand(['git bug', 'push', 'colligo']);
                 });
             } else {
-                return execCommand(['git bug', 'push', 'distcollab']);
+                return execCommand(['git bug', 'push', 'colligo']);
 
             }
         });
@@ -104,12 +104,12 @@ exports.PullRepository = async () => {
 
         framework.SyncronizeData(global.moduleConfig.bareRepoPath);
         await global.git.getRemotes().then(function (result) {
-            if (result.findIndex(i => i.name === 'distcollab') < 0) {
-                return global.git.addRemote('distcollab', global.moduleConfig.bareRepoPath).then(function () {
-                    return execCommand(['git bug', 'pull', 'distcollab']);
+            if (result.findIndex(i => i.name === 'colligo') < 0) {
+                return global.git.addRemote('colligo', global.moduleConfig.bareRepoPath).then(function () {
+                    return execCommand(['git bug', 'pull', 'colligo']);
                 });
             } else {
-                return execCommand(['git bug', 'pull', 'distcollab']);
+                return execCommand(['git bug', 'pull', 'colligo']);
 
             }
         });
