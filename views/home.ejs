@@ -1,7 +1,18 @@
 <%- include('header'); -%>
 <head></head>
 <body style="height: 50px;text-align: right;">
-<button class="btn btn-info add-bug" data-toggle="modal" data-target="#AddBugModal">Add bug</button>
+
+<form method="post" action="/add-bug">
+    <div class="form-group">
+        <label for="bootsrapNodes">Bug title</label>
+        <textarea class="form-control" name="title" id="" rows="1"></textarea>
+    </div><div class="form-group">
+        <label for="bootsrapNodes">Bug description</label>
+        <textarea class="form-control" name="description" id="" rows="4"></textarea>
+    </div>
+    <button type="submit" class="btn btn-info add-bug-btn">submit</button>
+
+</form>
 
 
 <div class="modal fade" id="AddBugModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -15,9 +26,6 @@
                 </button>
             </div>
             <div class="modal-body">
-
-                <div class="existing-bugs"></div>
-
                 <form method="post" action="/add-bug">
                     <div class="form-group">
                         <label for="bootsrapNodes">Bug title</label>

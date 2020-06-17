@@ -1,5 +1,4 @@
 $(document).ready(function () {
-console.log('page loaded')
 $('.add-comment').on('click',function () {
 //show modal with existing bugs.
 
