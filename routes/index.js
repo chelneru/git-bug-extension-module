@@ -8,7 +8,7 @@ router.get('/', async function (req, res, next) {
     if (global.connected === false) {
         return res.redirect('/loading');
     }
-    if (global.moduleConfig.repoPath !== undefined) {
+    if (global.moduleConfig.repoPath !== undefined && global.moduleConfig.identity.projectPath == global.framework_projectPath) {
         //show the normal interface with buttons
     } else {
         //show interface to input repoPath

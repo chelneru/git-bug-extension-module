@@ -27,7 +27,7 @@ exports.GetIdentity = () => {
                     is_author: res.data.identity.is_author,
                     projectPath: res.data.identity.projectPath
                 };
-
+                global.framework_projectPath = res.data.identity.projectPath;
                 global.moduleConfig.identity = {...global.moduleConfig.identity, ...new_identity}; //update new identity
                 global.moduleConfig.bareRepoPath = path.join(global.moduleConfig.identity.projectPath, 'git-extension', 'bare-repo');
                 console.log('Retrieved identity for git-bug successfully!');
