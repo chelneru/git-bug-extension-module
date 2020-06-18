@@ -15,11 +15,20 @@ router.get('/', async function (req, res, next) {
         return res.redirect('/set-repo');
 
     }
-    if (global.started_gitbug === false) {
-        setTimeout(function () {
-            internal.StartGitBug();
-        }, 5000);
+    if(global.moduleConfig.setIndentity !== true) {
+        internal.SetGitBugIdentity(global.moduleConfig.identity.name,global.moduleConfig.identity.email);
+        global.moduleConfig.setIndentity = true;
+        internal.SaveConfig();
+        if (global.started_gitbug === false) {
+            setTimeout(function () {
+                internal.StartGitBug();
+            }, 7000);
+        }
     }
+    else {
+        internal.StartGitBug();
+    }
+
     internal.CreateBareRepo(global.moduleConfig.bareRepoPath);
 
     res.render('home');
@@ -53,10 +62,17 @@ router.post('/set-repo', async function (req, res, next) {
         await internal.CreateRepository(global.moduleConfig.repoPath);
     }
     internal.CreateBareRepo(global.moduleConfig.bareRepoPath);
+    if(global.moduleConfig.setIndentity !== true) {
+        internal.SetGitBugIdentity(global.moduleConfig.identity.name,global.moduleConfig.identity.email);
+        global.moduleConfig.setIndentity = true;
+    }
     internal.SaveConfig();
+
     if (global.started_gitbug === false) {
 
-        internal.StartGitBug();
+        setTimeout(function () {
+            internal.StartGitBug();
+        }, 3000);
     }
     return res.redirect('/');
 });
