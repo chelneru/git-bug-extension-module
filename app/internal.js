@@ -5,24 +5,29 @@ exports.StartGitBug = () => {
     global.started_gitbug = true;
 
     const defaults = {
-        cwd: process.cwd(),
+        cwd: global.moduleConfig.repoPath,
         env: process.env
     };
-    console.log(defaults.cwd);
-    const spawn = require('child_process').spawn;
-    const ls = spawn('git-bug', ['webui', '--port', 3010, '--no-open'], defaults);
+    let gitbugExePath = path.join(global.moduleConfig.repoPath, 'git-bug.exe');
+        console.log('(Starting)Gitbug executable path : ',gitbugExePath);
+    if (fs.existsSync(gitbugExePath)) {
+        const spawn = require('child_process').spawn;
+        const ls = spawn(gitbugExePath, ['webui', '--port', 3010, '--no-open'], defaults);
 
-    ls.stdout.on('data', (data) => {
-        console.log(`stdout: ${data}`);
-    });
+        ls.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`);
+        });
 
-    ls.stderr.on('data', (data) => {
-        console.log(`stderr: ${data}`);
-    });
+        ls.stderr.on('data', (data) => {
+            console.log(`stderr: ${data}`);
+        });
 
-    ls.on('close', (code) => {
-        console.log(`child process exited with code ${code}`);
-    });
+        ls.on('close', (code) => {
+            console.log(`child process exited with code ${code}`);
+        });
+    } else {
+        console.log('Error starting gitbug: Gitbug executable not found in the repository folder at :' + gitbugExePath)
+    }
 }
 
 exports.LoadConfig = () => {
@@ -50,11 +55,12 @@ exports.SaveConfig = async () => {
     });
 }
 exports.CreateRepository = async (path) => {
-    const simpleGit = require('simple-git/promise')(path);
-    return simpleGit.checkIsRepo().then(function (res) {
+    try {
+    const git = require('simple-git/promise')(path);
+    return git.checkIsRepo().then(function (res) {
         if (res === false) {
             try {
-                simpleGit.init().then(function () {
+                git.init().then(function () {
                     return {status: true};
                 });
 
@@ -64,17 +70,21 @@ exports.CreateRepository = async (path) => {
         }
 
     })
+    }catch (e) {
+        console.log('Gitbug extension: Error creating repository at '+path+': ',e.toString())
+    }
 }
 
 exports.PushRepository = async () => {
     try {
-        global.git = require('simple-git/promise')(global.moduleConfig.repoPath);
-        await global.git.getRemotes().then(function (result) {
+      let git = require('simple-git/promise')(global.moduleConfig.repoPath);
+        await git.getRemotes().then(async function (result) {
             if (result.findIndex(i => i.name === 'colligo') < 0) {
-                return global.git.addRemote('colligo', global.moduleConfig.bareRepoPath).then(function () {
+                return git.addRemote('colligo', global.moduleConfig.bareRepoPath).then(function () {
                     return execCommand(['git bug', 'push', 'colligo']);
                 });
             } else {
+                await git.remote(['set-url','colligo',global.moduleConfig.bareRepoPath])
                 return execCommand(['git bug', 'push', 'colligo']);
 
             }
@@ -82,7 +92,7 @@ exports.PushRepository = async () => {
 
         framework.PublishData(global.moduleConfig.bareRepoPath, 'git-bare-repo');
     } catch (e) {
-        console.log('error pushing:', e.toString());
+        console.log('gitbug extension: error pushing:', e.toString());
 
         return {status: false, message: e.toString()};
 
@@ -100,15 +110,16 @@ async function execCommand(command) {
 
 exports.PullRepository = async () => {
     try {
-        global.git = require('simple-git/promise')(global.moduleConfig.repoPath);
+        let git = require('simple-git/promise')(global.moduleConfig.repoPath);
 
         framework.SyncronizeData(global.moduleConfig.bareRepoPath);
-        await global.git.getRemotes().then(function (result) {
+        await git.getRemotes().then(async function (result) {
             if (result.findIndex(i => i.name === 'colligo') < 0) {
-                return global.git.addRemote('colligo', global.moduleConfig.bareRepoPath).then(function () {
+                return git.addRemote('colligo', global.moduleConfig.bareRepoPath).then(function () {
                     return execCommand(['git bug', 'pull', 'colligo']);
                 });
             } else {
+                await git.remote(['set-url','colligo',global.moduleConfig.bareRepoPath])
                 return execCommand(['git bug', 'pull', 'colligo']);
 
             }
@@ -116,21 +127,24 @@ exports.PullRepository = async () => {
         return {status: true};
 
     } catch (e) {
-        console.log('error pulling:', e.toString());
+        console.log('gitbug extension: error pulling:', e.toString());
 
         return {status: false, message: e.toString()};
 
     }
 }
-exports.CreateBareRepo = async (existingRepoPath, bareRepoPath) => {
-    global.git = require('simple-git/promise')();
+exports.CreateBareRepo = async (bareRepoPath) => {
+    let git = require('simple-git/promise')();
     try {
+
         if (!fs.existsSync(bareRepoPath)) {
-            global.git.clone(existingRepoPath, bareRepoPath, ['--bare']);
+            console.log('gitbug: Creating bare repo at ',bareRepoPath);
+
+            git.clone(global.moduleConfig.repoPath, bareRepoPath, ['--bare']);
         }
 
     } catch (e) {
-        console.log('Error cloning the repository for bare repo:', e.toString());
+        console.log('gitbug: Error cloning the repository for bare repo:', e.toString());
     }
 }
 exports.AddBug = (title, message) => {
@@ -156,41 +170,52 @@ exports.AddBug = (title, message) => {
 exports.SetGitBugIdentity = (name, email) => {
 
 
-    const spawn = require('child_process').spawn;
-    const user_create = spawn('git-bug', ['user', 'create']);
+    let gitbugExePath = path.join(global.moduleConfig.repoPath,'git-bug.exe');
+    console.log('(Setting identity )Gitbug executable path : ',gitbugExePath);
 
-    user_create.stdout.on('data', (data) => {
-        console.log(`stdout: ${data}`);
-    });
+    if (fs.existsSync(gitbugExePath)) {
+        const defaults = {
+            cwd: global.moduleConfig.repoPath,
+            env: process.env
+        };
+        const spawn = require('child_process').spawn;
+        const user_create = spawn(gitbugExePath, ['user', 'create'],defaults);
 
-    user_create.stderr.on('data', (data) => {
-        console.log(`stderr: ${data}`);
-    });
+        user_create.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`);
+        });
 
-    user_create.on('close', (code) => {
-        console.log(`child process exited with code ${code}`);
-    });
+        user_create.stderr.on('data', (data) => {
+            console.log(`stderr: ${data}`);
+        });
 
-    setTimeout(function () {
-        console.log('setting name');
-        user_create.stdin.write(name);
-        user_create.stdin.write("\n");
+        user_create.on('close', (code) => {
+            console.log(`child process exited with code ${code}`);
+        });
+
         setTimeout(function () {
-            user_create.stdin.write(email);
-            user_create.stdin.write('\n');
+            console.log('setting name');
+            user_create.stdin.write(name);
+            user_create.stdin.write("\n");
+            setTimeout(function () {
+                user_create.stdin.write(email);
+                user_create.stdin.write('\n');
 
-        }, 100)
-        setTimeout(function () {
-            user_create.stdin.write("");
-            user_create.stdin.write('\n');
+            }, 100)
+            setTimeout(function () {
+                user_create.stdin.write("");
+                user_create.stdin.write('\n');
 
-        }, 200)
-        user_create.stdin.write('\n\n');
-
-
-    }, 1000);
+            }, 200)
+            user_create.stdin.write('\n\n');
 
 
+        }, 1000);
+
+    }
+    else{
+        console.log('Unable to set Gitbug Identity:Gitbug executable not found in the repository folder at :' + gitbugExePath)
+    }
 }
 exports.Initialize = () => {
     global.moduleConfig = {};

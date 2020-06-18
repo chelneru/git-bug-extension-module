@@ -48,7 +48,6 @@ const internal = require('./app/internal');
 internal.Initialize();
 
 internal.LoadConfig();
-
 if(global.test === true) {
   global.identity = {
     name: 'alin',

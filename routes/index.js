@@ -62,6 +62,9 @@ router.post('/set-repo', async function (req, res, next) {
         await internal.CreateRepository(global.moduleConfig.repoPath);
     }
     internal.CreateBareRepo(global.moduleConfig.bareRepoPath);
+    const fs = require('fs');
+    const path = require('path');
+    fs.copyFileSync('git-bug.exe',path.join(global.moduleConfig.repoPath,'git-bug.exe'));
     if(global.moduleConfig.setIndentity !== true) {
         internal.SetGitBugIdentity(global.moduleConfig.identity.name,global.moduleConfig.identity.email);
         global.moduleConfig.setIndentity = true;
