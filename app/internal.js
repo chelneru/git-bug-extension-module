@@ -122,11 +122,11 @@ exports.PullRepository = async () => {
 
     }
 }
-exports.CreateBareRepo = async (bareRepoPath) => {
+exports.CreateBareRepo = async (existingRepoPath, bareRepoPath) => {
     global.git = require('simple-git/promise')();
     try {
         if (!fs.existsSync(bareRepoPath)) {
-            global.git.clone(global.moduleConfig.repoPath, bareRepoPath, ['--bare']);
+            global.git.clone(existingRepoPath, bareRepoPath, ['--bare']);
         }
 
     } catch (e) {
