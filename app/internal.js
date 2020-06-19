@@ -57,7 +57,7 @@ exports.SaveConfig = async () => {
 exports.CreateRepository = async (path) => {
     try {
     const git = require('simple-git/promise')(path);
-    return git.checkIsRepo().then(function (res) {
+    return await git.checkIsRepo().then(function (res) {
         if (res === false) {
             try {
                 git.init().then(function () {
