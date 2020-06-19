@@ -62,13 +62,13 @@ exports.CreateRepository = async (path) => {
             fs.mkdirSync(path);
         }
     const git = require('simple-git/promise')(path);
-    return await git.checkIsRepo().then(function (res) {
+    return await git.checkIsRepo().then(async function (res) {
         if (res === false) {
             //try to clone from bare repository
             if (fs.existsSync(global.moduleConfig.bareRepoPath)) {
 
                 try {
-                    git.clone(global.moduleConfig.repoPath, global.moduleConfig.bareRepoPath);
+                    await git.clone(global.moduleConfig.repoPath, global.moduleConfig.bareRepoPath);
                 } catch
                     (e) {
                     console.log('Gitbug: Error cloning the repository for bare repo:', e.toString());
@@ -158,7 +158,7 @@ exports.CreateBareRepo = async (bareRepoPath) => {
         if (!fs.existsSync(bareRepoPath)) {
             console.log('gitbug: Creating bare repo at ',bareRepoPath);
 
-            git.clone(global.moduleConfig.repoPath, bareRepoPath, ['--bare']);
+            await git.clone(global.moduleConfig.repoPath, bareRepoPath, ['--bare']);
         }
 
     } catch (e) {

@@ -75,7 +75,7 @@ router.post('/set-repo', async function (req, res, next) {
 
         setTimeout(function () {
             internal.StartGitBug();
-        }, 3000);
+        }, 7000);
     }
     return res.redirect('/');
 });
