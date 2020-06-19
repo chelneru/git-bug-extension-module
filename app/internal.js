@@ -40,6 +40,8 @@ exports.LoadConfig = () => {
             global.moduleConfig = JSON.parse(rawdata.toString());
         } catch (e) {
             console.log('Error loading config from settings file. The file does not have valid JSON:', e.toString());
+            global.moduleConfig = {};
+            exports.SaveConfig();
         }
     } else {
         global.moduleConfig = {};
@@ -56,16 +58,32 @@ exports.SaveConfig = async () => {
 }
 exports.CreateRepository = async (path) => {
     try {
+        if (!fs.existsSync(path)) {
+            fs.mkdirSync(path);
+        }
     const git = require('simple-git/promise')(path);
     return await git.checkIsRepo().then(function (res) {
         if (res === false) {
-            try {
-                git.init().then(function () {
-                    return {status: true};
-                });
+            //try to clone from bare repository
+            if (fs.existsSync(global.moduleConfig.bareRepoPath)) {
 
-            } catch (e) {
-                return {status: false, message: e.toString()};
+                try {
+                    git.clone(global.moduleConfig.repoPath, global.moduleConfig.bareRepoPath);
+                } catch
+                    (e) {
+                    console.log('Gitbug: Error cloning the repository for bare repo:', e.toString());
+                }
+            } else {
+                //initialize a new repository
+                try {
+                    git.init().then(function () {
+                        return {status: true};
+                    });
+
+                } catch (e) {
+                    console.log('Gitbug: Error creating repository:', e.toString())
+                    return {status: false, message: e.toString()};
+                }
             }
         }
 
