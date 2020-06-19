@@ -39,7 +39,7 @@ exports.LoadConfig = () => {
             let rawdata = fs.readFileSync(path.join(appRoot, 'settings.json'));
             global.moduleConfig = JSON.parse(rawdata.toString());
         } catch (e) {
-            console.log('Error loading config from settings file. The file does not have valid JSON:', e.toString());
+            // console.log('Error loading config from settings file. The file does not have valid JSON:', e.toString());
             global.moduleConfig = {};
             exports.SaveConfig();
         }
@@ -229,6 +229,13 @@ exports.SetGitBugIdentity = (name, email) => {
 
 
         }, 1000);
+        user_create.on('close', function () {
+            console.log('Setting identity process has stopped');
+            if (global.started_gitbug === false) {
+                global.started_gitbug = true;
+                exports.StartGitBug();
+            }
+        });
 
     }
     else{

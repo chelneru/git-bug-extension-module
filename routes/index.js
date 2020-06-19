@@ -19,14 +19,18 @@ router.get('/', async function (req, res, next) {
         internal.SetGitBugIdentity(global.moduleConfig.identity.name,global.moduleConfig.identity.email);
         global.moduleConfig.setIndentity = true;
         internal.SaveConfig();
-        if (global.started_gitbug === false) {
-            setTimeout(function () {
-                internal.StartGitBug();
-            }, 7000);
-        }
+        // if (global.started_gitbug === false) {
+        //     setTimeout(function () {
+        //         internal.StartGitBug();
+        //     }, 7000);
+        // }
     }
     else {
-        internal.StartGitBug();
+    //     if (global.started_gitbug === false) {
+    //         global.started_gitbug = true;
+    //
+    //     internal.StartGitBug();
+    // }
     }
 
     internal.CreateBareRepo(global.moduleConfig.bareRepoPath);
@@ -71,12 +75,12 @@ router.post('/set-repo', async function (req, res, next) {
     }
     internal.SaveConfig();
 
-    if (global.started_gitbug === false) {
-
-        setTimeout(function () {
-            internal.StartGitBug();
-        }, 7000);
-    }
+    // if (global.started_gitbug === false) {
+    //
+    //     setTimeout(function () {
+    //         internal.StartGitBug();
+    //     }, 7000);
+    // }
     return res.redirect('/');
 });
 
