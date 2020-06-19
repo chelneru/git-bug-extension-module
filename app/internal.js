@@ -25,6 +25,8 @@ exports.StartGitBug = () => {
         ls.on('close', (code) => {
             console.log(`child process exited with code ${code}`);
         });
+
+
     } else {
         console.log('Error starting gitbug: Gitbug executable not found in the repository folder at :' + gitbugExePath)
     }
@@ -99,11 +101,11 @@ exports.PushRepository = async () => {
         await git.getRemotes().then(async function (result) {
             if (result.findIndex(i => i.name === 'colligo') < 0) {
                 return git.addRemote('colligo', global.moduleConfig.bareRepoPath).then(function () {
-                    return execCommand(['git bug', 'push', 'colligo']);
+                    return execCommand('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" push colligo');
                 });
             } else {
                 await git.remote(['set-url','colligo',global.moduleConfig.bareRepoPath])
-                return execCommand(['git bug', 'push', 'colligo']);
+                return execCommand('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" push colligo');
 
             }
         });
@@ -130,15 +132,14 @@ exports.PullRepository = async () => {
     try {
         let git = require('simple-git/promise')(global.moduleConfig.repoPath);
 
-        framework.SyncronizeData(global.moduleConfig.bareRepoPath);
         await git.getRemotes().then(async function (result) {
             if (result.findIndex(i => i.name === 'colligo') < 0) {
                 return git.addRemote('colligo', global.moduleConfig.bareRepoPath).then(function () {
-                    return execCommand(['git bug', 'pull', 'colligo']);
+                    return execCommand('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" pull colligo');
                 });
             } else {
                 await git.remote(['set-url','colligo',global.moduleConfig.bareRepoPath])
-                return execCommand(['git bug', 'pull', 'colligo']);
+                return execCommand('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" pull colligo');
 
             }
         });
@@ -177,8 +178,9 @@ exports.AddBug = (title, message) => {
 }`;
 
     axios.post('http://127.0.0.1:3010/graphql', {query: query})
-        .then((res) => {
-                console.log(res.data)
+        .then(async (res) => {
+                console.log(res.data);
+                await exports.PushRepository();
             }
         )
         .catch((error) => {
@@ -186,6 +188,7 @@ exports.AddBug = (title, message) => {
         });
 }
 exports.SetGitBugIdentity = (name, email) => {
+    global.started_gitbug = true;
 
 
     let gitbugExePath = path.join(global.moduleConfig.repoPath,'git-bug.exe');
@@ -234,6 +237,7 @@ exports.SetGitBugIdentity = (name, email) => {
             if (global.started_gitbug === false) {
                 global.started_gitbug = true;
                 exports.StartGitBug();
+                exports.PullRepository();
             }
         });
 

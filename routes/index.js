@@ -26,11 +26,11 @@ router.get('/', async function (req, res, next) {
         // }
     }
     else {
-    //     if (global.started_gitbug === false) {
-    //         global.started_gitbug = true;
-    //
-    //     internal.StartGitBug();
-    // }
+        if (global.started_gitbug === false) {
+            global.started_gitbug = true;
+
+        internal.StartGitBug();
+    }
     }
 
     internal.CreateBareRepo(global.moduleConfig.bareRepoPath);
