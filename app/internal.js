@@ -2,8 +2,6 @@ const framework = require('./framework');
 const fs = require('fs');
 const path = require('path');
 exports.StartGitBug = () => {
-    global.started_gitbug = true;
-
     const defaults = {
         cwd: global.moduleConfig.repoPath,
         env: process.env
@@ -265,11 +263,10 @@ exports.SetGitBugIdentity = (name, email) => {
         }, 1000);
         user_create.on('close', function () {
             console.log('Setting identity process has stopped');
-            if (global.started_gitbug === false) {
-                global.started_gitbug = true;
+
                 exports.StartGitBug();
                 exports.PullRepository();
-            }
+
         });
 
     }
