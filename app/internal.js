@@ -26,12 +26,14 @@ exports.StartGitBug = () => {
             console.log(`child process exited with code ${code}`);
         });
 
-
+    exports.ShareIssues();
     } else {
         console.log('Error starting gitbug: Gitbug executable not found in the repository folder at :' + gitbugExePath)
     }
 }
-
+exports.ShareIssues = () => {
+        exports.GetBugsIds();
+}
 exports.LoadConfig = () => {
     global.sharedData = {};
     const appRoot = require('app-root-path').toString();
@@ -188,6 +190,28 @@ exports.AddBug = (title, message) => {
         .then(async (res) => {
                 console.log(res.data);
                 await exports.PushRepository();
+            }
+        )
+        .catch((error) => {
+            console.error(error)
+        });
+}
+exports.GetBugsIds = () => {
+    const axios = require('axios');
+
+    let query = `query{
+ repository{
+  
+ allBugs {
+  nodes {id}
+}
+}
+}`;
+
+    axios.post('http://127.0.0.1:3010/graphql', {query: query})
+        .then(async (res) => {
+                // console.log(res.data);
+                framework.PublishSharedData(res.data.data.repository.allBugs.nodes);
             }
         )
         .catch((error) => {

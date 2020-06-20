@@ -34,7 +34,6 @@ router.get('/', async function (req, res, next) {
     }
 
     internal.CreateBareRepo(global.moduleConfig.bareRepoPath);
-
     res.render('home');
 });
 
