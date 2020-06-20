@@ -59,7 +59,7 @@ router.post('/set-repo', async function (req, res, next) {
     global.moduleConfig.repoPath = req.body.repo;
     if (global.moduleConfig.identity.is_author === false) {
         //retrieve data
-        await framework.SyncronizeData('git-bare-repo', global.moduleConfig.repoPath);
+        await framework.SyncronizeData('git-bare-repo', global.moduleConfig.bareRepoPath);
         await internal.CreateRepository(global.moduleConfig.repoPath);
     } else {
         await internal.CreateRepository(global.moduleConfig.repoPath);
@@ -69,7 +69,9 @@ router.post('/set-repo', async function (req, res, next) {
     const path = require('path');
     fs.copyFileSync('git-bug.exe',path.join(global.moduleConfig.repoPath,'git-bug.exe'));
     if(global.moduleConfig.setIndentity !== true) {
-        internal.SetGitBugIdentity(global.moduleConfig.identity.name,global.moduleConfig.identity.email);
+        setTimeout(function (){
+                                 internal.SetGitBugIdentity(global.moduleConfig.identity.name,global.moduleConfig.identity.email)
+        },3000);
         global.moduleConfig.setIndentity = true;
     }
     internal.SaveConfig();

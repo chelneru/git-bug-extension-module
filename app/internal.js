@@ -265,7 +265,7 @@ exports.SetGitBugIdentity = (name, email) => {
             console.log('Setting identity process has stopped');
 
                 exports.StartGitBug();
-                exports.PullRepository();
+                // exports.PullRepository();
 
         });
 
