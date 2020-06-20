@@ -101,11 +101,14 @@ exports.PushRepository = async () => {
         await git.getRemotes().then(async function (result) {
             if (result.findIndex(i => i.name === 'colligo') < 0) {
                 return git.addRemote('colligo', global.moduleConfig.bareRepoPath).then(function () {
-                    return execCommand('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" push colligo');
+                    return {status:true}
+                    // return framework.ExecCommandByFramework('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" push colligo');
                 });
             } else {
                 await git.remote(['set-url','colligo',global.moduleConfig.bareRepoPath])
-                return execCommand('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" push colligo');
+                return {status:true}
+
+                // return framework.ExecCommandByFramework('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" push colligo');
 
             }
         });
@@ -135,11 +138,15 @@ exports.PullRepository = async () => {
         await git.getRemotes().then(async function (result) {
             if (result.findIndex(i => i.name === 'colligo') < 0) {
                 return git.addRemote('colligo', global.moduleConfig.bareRepoPath).then(function () {
-                    return execCommand('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" pull colligo');
+                    return {status:true}
+
+                    // return framework.ExecCommandByFramework('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" pull colligo');
                 });
             } else {
                 await git.remote(['set-url','colligo',global.moduleConfig.bareRepoPath])
-                return execCommand('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" pull colligo');
+                return {status:true}
+
+                // return framework.ExecCommandByFramework('"'+path.join(global.moduleConfig.repoPath,'git-bug.exe')+'" pull colligo');
 
             }
         });

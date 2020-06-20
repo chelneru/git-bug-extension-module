@@ -86,7 +86,7 @@ exports.PublishSharedData =(sharedData) => {
 exports.PublishData = (bareRepoLocalPath,folderName) => {
     // publishing data for this extension modules means we will publish hash for the bare repo
     axios.post('http://localhost:3000/extension/publish-data', {
-            name:'gitbug',
+            name:'git',
             path: bareRepoLocalPath,
             folder: folderName,
         }
@@ -101,6 +101,20 @@ exports.PublishData = (bareRepoLocalPath,folderName) => {
         })
 }
 
+exports.ExecCommandByFramework = (command) => {
+    axios.post('http://localhost:3000/extension/execute-command', {
+            command: command
+        }
+    )
+        .then((res) => {
+            if (res.data.status) {
+                console.log('Command executed successfully!');
+            }
+        })
+        .catch((error) => {
+            console.error(error)
+        })
+}
 exports.SyncronizeData = (folderName, targetPath) => {
     // syncronizing data for this extension modules means we will update the local repo
     axios.post('http://localhost:3000/extension/update-data', {
